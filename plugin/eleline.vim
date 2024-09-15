@@ -403,3 +403,48 @@ augroup END
 
 let &cpoptions = s:save_cpo
 unlet s:save_cpo
+
+" Generate tabline
+function! ElelineBufferLine() abort
+  let s = ''
+  let l:current = bufnr('%')
+  let l:buffers = filter(range(1, bufnr('$')), 'buflisted(v:val)')
+
+  for i in l:buffers
+    let l:buf_modified = getbufvar(i, "&modified")
+
+    " Select the highlighting
+    if i == l:current
+      let s .= '%#ElelineBufferSel#'
+    else
+      let s .= '%#ElelineBuffer#'
+    endif
+
+    " Get buffer label
+    let label = s:get_buffer_label(i)
+
+
+	let s .= label
+
+	if l:buf_modified
+		let s .= '%#ElelineBufferModified#%T'
+    endif
+  endfor
+
+  " After the last buffer, fill with BufferLineFill and reset buffer nr
+  let s .= '%#ElelineBufferFill#%T'
+
+  return s
+endfunction
+
+" Set tabline
+set tabline=%!ElelineBufferLine()
+
+" Initialize colors
+call s:init_tabline_colors()
+
+" Update colors when colorscheme changes
+augroup ElelineBufferLine
+  autocmd!
+  autocmd ColorScheme * call s:init_tabline_colors()
+augroup END
